@@ -36,6 +36,14 @@ const estudianteSchema = new Schema(
             type: Boolean,
             default: true,
         },
+        token: {
+            type: String,
+            default: null,
+        },
+        confirmEmail: {
+            type: Boolean,
+            default: false,
+        },
         rol: {
             type: String,
             default: "estudiante",
@@ -59,4 +67,9 @@ estudianteSchema.methods.matchPassword = async function (password) {
     return response;
 };
 
+// Método para crear un token
+estudianteSchema.methods.crearToken = function () {
+    const tokenGenerado = (this.token = Math.random().toString(36).slice(2));
+    return tokenGenerado;
+};
 export default model("Estudiante", estudianteSchema);

@@ -2,7 +2,9 @@ import Administrador from "../models/administrador.js";
 import mongoose from "mongoose";
 import generarJWT from "../helpers/createJWT.js";
 
-
+//! Sprint 1
+//? Login
+//-------------------------------------------------------------------
 const loginAdministrador = async (req, res) => {
     const { email, password } = req.body;
 
@@ -27,12 +29,13 @@ const loginAdministrador = async (req, res) => {
 
     const token = generarJWT(administradorBDD._id, "administrador");
 
-    const { nombre, apellido, email: emailA, celular, _id } = administradorBDD;
+    const { nombre, apellido, email: emailA, celular, direccion, _id } = administradorBDD;
 
     res.status(200).json({
         token,
         nombre,
         apellido,
+        direccion,
         emailA,
         celular,
         rol: "administrador",

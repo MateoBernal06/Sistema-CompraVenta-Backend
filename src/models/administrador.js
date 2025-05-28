@@ -25,6 +25,11 @@ const administradorSchema = new Schema(
             trim: true,
             default: null,
         },
+        direccion: {
+            type: String,
+            trim: true,
+            default: null,
+        },
         password: {
             type: String,
             required: true,

@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import administradorRouter from "./routes/administrador_routes.js";
+import estudiantesRouter from "./routes/estudiante_routes.js";
 import morgan from "morgan";
 
 // Inicializaciones
@@ -20,11 +21,12 @@ app.use(morgan("dev"));
 
 // Rutas
 app.get("/", (req, res) => {
-    res.send("Server on");
+    res.send("Server ok");
 });
 
 // Importar las rutas
 app.use("/api", administradorRouter);
+app.use("/api", estudiantesRouter);
 
 // Manejo de una ruta que no sea encontrada
 app.use((req, res) => res.status(404).send("Endpoint no encontrado - 404"));
