@@ -1,20 +1,11 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import app from "./server.js";
+import connection from "./database.js";
+import dotenv from "dotenv";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+dotenv.config();
+connection();
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
-
-// Rutas
-app.get('/', (req, res) => {
-    res.send('API funcionando correctamente');
+app.listen(app.get("port"), () => {
+    console.log(`Server ok on http://localhost:${app.get("port")}`);
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en http://localhost:${PORT}`);
-});
