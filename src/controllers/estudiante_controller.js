@@ -65,14 +65,29 @@ const login = async (req, res) => {
 // Método para el registro
 const registro = async (req, res) => {
     // Desestructurar los campos
-    const { email, password } = req.body;
+    const { email, password, celular, direccion, nombre, apellido } = req.body;
+
     // Validar todos los campos llenos
     if (Object.values(req.body).includes(""))
         return res
         .status(400)
         .json({ msg: "Lo sentimos, debes llenar todos los campos" });
+    
+    // Validar que el número de celular tenga 10 dígitos
+    if (!/^\d{10}$/.test(celular))
+        return res
+            .status(400)
+            .json({ msg: "El número de celular debe tener 10 dígitos" });
+    
+     // Validar que la contraseña tenga mínimo 6 caracteres
+    if (!password || password.length < 6)
+        return res
+            .status(400)
+            .json({ msg: "La contraseña debe tener al minimo 6 digitos" });
+
     // Obtener el usuario de la BDD en base al email
     const verificarEmailBDD = await Estudiante.findOne({ email });
+    
     // Validar que el email sea nuevo
     if (verificarEmailBDD)
         return res
