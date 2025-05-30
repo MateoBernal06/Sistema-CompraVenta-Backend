@@ -15,38 +15,38 @@ const login = async (req, res) => {
 
     if (Object.values(req.body).includes(""))
         return res
-        .status(404)
-        .json({ msg: "Lo sentimos, debes llenar todos los campos" });
+            .status(400)
+            .json({ msg: "Lo sentimos, debes llenar todos los campos" });
 
     const estudianteBDD = await Estudiante.findOne({ email }).select(
         "-status -__v -token -updatedAt -createdAt"
     );
 
-    if (estudianteBDD?.confirmEmail === false)
-        return res
-        .status(403)
-        .json({ msg: "Lo sentimos, debe verificar su cuenta" });
-
     if (!estudianteBDD)
         return res
-        .status(404)
-        .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
-    else{
-        res.status(200).json({
-            msg: "Bienvenido al sistema de compra-venta",
-        });
-    }
+            .status(404)
+            .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
+
+    if (estudianteBDD.rol !== "estudiante")
+        return res
+            .status(403)
+            .json({ msg: "Acceso denegado: no tienes permisos de estudiante" });
+
+    if (estudianteBDD?.confirmEmail === false)
+        return res
+            .status(403)
+            .json({ msg: "Lo sentimos, debe verificar su cuenta" });
 
     const verificarPassword = await estudianteBDD.matchPassword(password);
 
     if (!verificarPassword)
         return res
-        .status(404)
-        .json({ msg: "Lo sentimos, el password no es el correcto" });
+            .status(404)
+            .json({ msg: "Lo sentimos, el password no es el correcto" });
 
     const token = generarJWT(estudianteBDD._id, "estudiante");
 
-    const { nombre, apellido, celular, _id } = estudianteBDD;
+    const { nombre, apellido, celular, direccion, estado, _id } = estudianteBDD;
 
     res.status(200).json({
         token,
@@ -57,9 +57,10 @@ const login = async (req, res) => {
         estado,
         _id,
         email: estudianteBDD.email,
-        rol: "estudiante",
+        rol: "estudiante", // <--- AQUÍ ya estará definido correctamente
     });
 };
+
 
 
 // Método para el registro
@@ -143,6 +144,13 @@ const recuperarPassword = async (req, res) => {
         return res
         .status(404)
         .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
+    
+    // Validar que el usuario tenga el rol de estudiante
+    if (estudianteBDD.rol !== "estudiante")
+        return res
+            .status(403)
+            .json({ msg: "Acceso denegado: solo estudiantes pueden recuperar contraseña" });
+            
     const token = estudianteBDD.crearToken();
     estudianteBDD.token = token;
     await sendMailToRecoveryPassword(email, token);
@@ -178,14 +186,22 @@ const nuevoPassword = async (req, res) => {
         return res
         .status(404)
         .json({ msg: "Lo sentimos, debes llenar todos los campos" });
+
+    // Validar que la contraseña tenga mínimo 6 caracteres
+    if (!password || password.length < 6)
+        return res
+            .status(400)
+            .json({ msg: "La contraseña debe tener al menos 6 caracteres" });
+
     if (password != confirmpassword)
         return res
-        .status(404)
+        .status(400)
         .json({ msg: "Lo sentimos, los passwords no coinciden" });
     const estudianteBDD = await Estudiante.findOne({ token: req.params.token });
+    
     if (estudianteBDD?.token !== req.params.token)
         return res
-        .status(404)
+        .status(400)
         .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
     estudianteBDD.token = null;
     estudianteBDD.password = await estudianteBDD.encrypPassword(password);

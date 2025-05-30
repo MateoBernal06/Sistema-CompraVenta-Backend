@@ -20,6 +20,12 @@ const loginAdministrador = async (req, res) => {
         .status(404)
         .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
 
+    // Validar que el usuario tenga el rol de administrador
+    if (administradorBDD.rol !== "administrador")
+        return res
+            .status(403)
+            .json({ msg: "Acceso denegado: no tienes permisos de administrador" });
+
     const verificarPassword = await administradorBDD.matchPassword(password);
 
     if (!verificarPassword)
