@@ -84,7 +84,7 @@ const registro = async (req, res) => {
     if (!password || password.length < 6)
         return res
             .status(400)
-            .json({ msg: "La contraseña debe tener al minimo 6 digitos" });
+            .json({ msg: "La contraseña debe tener minimo 6 digitos" });
 
     // Obtener el usuario de la BDD en base al email
     const verificarEmailBDD = await Estudiante.findOne({ email });
