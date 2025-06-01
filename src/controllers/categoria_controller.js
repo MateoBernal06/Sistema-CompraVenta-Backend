@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 
 
 const crearCategoria = async (req, res) => {
+    
+    
     try {
         const { nombre, descripcion } = req.body;
 
@@ -21,12 +23,28 @@ const crearCategoria = async (req, res) => {
                 .json({ msg: 'El nombre de la categoría ya existe' });
         }
 
-        const categoria = new Categoria({ nombre, descripcion });
+         // Obtener el administrador desde el middleware
+        const administradorId = req.AdministradorBDD?._id;
+        if (!administradorId) {
+            return res
+            .status(403)
+            .json({ msg: 'Acceso denegado. Solo un administrador puede crear categorías.' });
+        }
+
+        // Crear y guardar la categoría
+        const categoria = new Categoria({
+            nombre: nombre.trim(),
+            descripcion: descripcion.trim(),
+            administrador: administradorId,
+        });
+
         await categoria.save();
         res.status(201).json(categoria);
 
     } catch (err) {
-        res.status(400).json({ error: 'Error al crear la categoría' });
+        /*res.status(400).json({ error: 'Error al crear la categoría' });*/
+        console.error(err); // 👈 Imprime el error en consola
+        res.status(400).json({ error: 'Error al crear la categoría', detalle: err.message });
     }
 }
 
@@ -110,12 +128,16 @@ const inactivarCategoria = async (req, res) => {
     }
 
     try {
-        const categoriaInactivada = await Categoria.findByIdAndUpdate(id, { estado: false }, { new: true });
+        const categoriaInactivada = await Categoria.findByIdAndUpdate(id);
         if (!categoriaInactivada) {
             return res
                 .status(404)
                 .json({ msg: 'Categoría no encontrada' });
         }
+
+        categoriaInactivada.estado = !categoriaInactivada.estado; 
+        await categoriaInactivada.save();
+
         res
             .status(200)
             .json(categoriaInactivada);
