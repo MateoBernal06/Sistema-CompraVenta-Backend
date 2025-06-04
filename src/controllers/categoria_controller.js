@@ -138,9 +138,16 @@ const inactivarCategoria = async (req, res) => {
         categoriaInactivada.estado = !categoriaInactivada.estado; 
         await categoriaInactivada.save();
 
+        const mensaje = categoriaInactivada.estado
+            ? 'Categoría activada exitosamente'
+            : 'Categoría inactivada exitosamente';
+
         res
             .status(200)
-            .json(categoriaInactivada);
+            .json({
+                msg: mensaje,
+                categoria: categoriaInactivada
+            });
 
     } catch (err) {
         res
