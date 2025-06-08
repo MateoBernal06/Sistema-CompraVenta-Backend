@@ -145,8 +145,7 @@ const inactivarCategoria = async (req, res) => {
         res
             .status(200)
             .json({
-                msg: mensaje,
-                categoria: categoriaInactivada
+                msg: mensaje
             });
 
     } catch (err) {

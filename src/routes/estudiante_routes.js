@@ -1,13 +1,16 @@
 
 import { Router } from "express";
-//import verificarAutenticacion from "../middleware/autenticacion.js";
+import verificarAutenticacion from '../middlewares/autentificacion.js';
 import { 
     login, 
     registro, 
     confirmEmail, 
     recuperarPassword, 
     comprobarTokenPasword, 
-    nuevoPassword 
+    nuevoPassword,
+    inactivarEstudiante,
+    buscarEstudiante,
+    verTodosEstudiantes
 } from "../controllers/estudiante_controller.js";
 
 
@@ -19,5 +22,9 @@ router.get("/confirmar/:token", confirmEmail);
 router.post("/recuperar-password", recuperarPassword);
 router.get("/comprobar-token/:token", comprobarTokenPasword);
 router.post("/nuevo-password/:token", nuevoPassword);
+
+router.patch("/estudiantes/:id", verificarAutenticacion, inactivarEstudiante);
+router.get("/estudiantes/:email", verificarAutenticacion, buscarEstudiante);
+router.get("/estudiantes", verificarAutenticacion, verTodosEstudiantes);
 
 export default router;

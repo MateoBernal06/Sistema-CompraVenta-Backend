@@ -213,12 +213,90 @@ const nuevoPassword = async (req, res) => {
         });
 };
 
-export { registro, 
+
+const verTodosEstudiantes = async (req, res) => {
+    try {
+        const estudiantes = await Estudiante.find();
+        res
+            .status(200)
+            .json(estudiantes);
+    } catch (err) {
+        res
+            .status(400)
+            .json({ error: 'Error al obtener los estudiantes' });
+    }
+}
+
+
+const buscarEstudiante = async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        const estudiante = await Estudiante.findOne({ email });
+        if (!estudiante) {
+            return res.status(404).json({ msg: 'Estudiante no encontrado' });
+        }
+        res
+            .status(200)
+            .json(estudiante);
+
+    } catch (err) {
+        res
+            .status(400)
+            .json({ error: 'Error al obtener el estudiante' });
+    }
+}
+
+
+const inactivarEstudiante = async (req, res) => {
+    const { id } = req.params;
+        
+    // Validar que el ID sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res
+            .status(400)
+            .json({ msg: 'ID no válido' });
+    }
+
+    try {
+        const estudianteInactivado = await Estudiante.findByIdAndUpdate(id);
+        if (!estudianteInactivado) {
+            return res
+                .status(404)
+                .json({ msg: 'Estudiante no encontrado' });
+        }
+
+        estudianteInactivado.estado = !estudianteInactivado.estado; 
+        await estudianteInactivado.save();
+
+        const mensaje = estudianteInactivado.estado
+            ? 'Estudiante activado exitosamente'
+            : 'Estudiante inactivado exitosamente';
+
+        res
+            .status(200)
+            .json({
+                msg: mensaje
+            });
+
+    } catch (err) {
+        res
+            .status(400)
+            .json({ error: 'Error al inactivar el estudiante' });
+    }
+}
+
+
+export { 
+    registro, 
     confirmEmail, 
     recuperarPassword, 
     comprobarTokenPasword,
     nuevoPassword,
-    login
+    login,
+    verTodosEstudiantes,
+    buscarEstudiante,
+    inactivarEstudiante
 };
 
 
