@@ -23,7 +23,7 @@ const crearCategoria = async (req, res) => {
                 .json({ msg: 'El nombre de la categoría ya existe' });
         }
 
-         // Obtener el administrador desde el middleware
+        // Obtener el administrador desde el middleware
         const administradorId = req.AdministradorBDD?._id;
         if (!administradorId) {
             return res

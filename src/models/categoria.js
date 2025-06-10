@@ -27,4 +27,4 @@ const categoriaSchema = new Schema(
     }
 );
 
-export default model("Categorias", categoriaSchema);
+export default model("Categoria", categoriaSchema);

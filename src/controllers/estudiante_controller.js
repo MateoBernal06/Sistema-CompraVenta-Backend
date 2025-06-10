@@ -57,7 +57,7 @@ const login = async (req, res) => {
         estado,
         _id,
         email: estudianteBDD.email,
-        rol: "estudiante", // <--- AQUÍ ya estará definido correctamente
+        rol: "estudiante"
     });
 };
 
