@@ -1,5 +1,6 @@
 
 import { Router } from 'express';
+import upload from '../config/multer.js';
 import verificarAutenticacion from '../middlewares/autentificacion.js';
 import { 
     crearPublicacion,
@@ -11,7 +12,7 @@ import {
 
 const router = Router();
 
-router.post('/publicacion', verificarAutenticacion, crearPublicacion);
+router.post('/publicacion', verificarAutenticacion, upload.single('imagen'), crearPublicacion);
 router.get('/publicacion', verificarAutenticacion, obtenerPublicaciones);
 router.get('/publicacion/:titulo', verificarAutenticacion, verPublicacion);
 router.put('/publicacion/:id', verificarAutenticacion, actualizarPublicacion);

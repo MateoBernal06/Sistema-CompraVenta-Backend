@@ -23,7 +23,7 @@ const publicacionSchema = new Schema(
             required: true,
         },
         imagen: {
-            type: Buffer,
+            type: String,
             required: true,
         },
         precio: {

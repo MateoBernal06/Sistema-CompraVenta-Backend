@@ -6,10 +6,10 @@ import Categoria from "../models/categoria.js";
 
 const crearPublicacion = async (req, res) => {
     try {
-        const { titulo, descripcion, categoria, imagen, precio } = req.body;
+        const { titulo, descripcion, categoria, precio } = req.body;
 
         // Validar campos vacíos
-        if (!titulo || !descripcion || !categoria || !imagen || !precio) {
+        if (!titulo || !descripcion || !categoria || !precio) {
             return res
                 .status(400)
                 .json({ msg: "Todos los campos son obligatorios" });
@@ -41,10 +41,15 @@ const crearPublicacion = async (req, res) => {
         }
 
         // Validar que el precio sea un número positivo
-        if (typeof precio !== 'number' || precio < 0) {
+        /*if (typeof precio !== 'number' || precio < 0) {
             return res
                 .status(400)
                 .json({ msg: "El precio debe ser un número positivo" });
+        }*/
+
+        // Validar que la imagen exista
+        if (!req.file || !req.file.path) {
+            return res.status(400).json({ msg: "La imagen es obligatoria" });
         }
 
         // Crear y guardar la nueva publicación
@@ -52,9 +57,9 @@ const crearPublicacion = async (req, res) => {
             titulo: titulo.trim(),
             descripcion: descripcion.trim(),
             autor: autor,
-            categoria: categoria.trim(),
-            imagen: imagen.trim(),
-            precio
+            categoria: categoria,
+            imagen: req.file.path,
+            precio: precio.trim()
         });
 
         await nuevaPublicacion.save();
@@ -63,7 +68,8 @@ const crearPublicacion = async (req, res) => {
     } catch (error) {
         res
             .status(500)
-            .json({ msg: `Error al crear la publicación` });
+            .json({ msg: `Error al crear la publicación`, error: error.message });
+            
     }
 }
 
