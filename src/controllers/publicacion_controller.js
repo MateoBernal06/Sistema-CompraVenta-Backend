@@ -111,11 +111,11 @@ const verPublicacion = async (req, res) => {
 
 const actualizarPublicacion = async (req, res) => {
     const { id } = req.params;
-    const { titulo, descripcion } = req.body;
+    const { titulo, descripcion, categoria } = req.body;
 
     try {
         // Validar campos vacíos
-        if (!titulo || !descripcion) {
+        if (!titulo || !descripcion || !categoria) {
             return res
                 .status(400)
                 .json({ mensaje: "Todos los campos son obligatorios" });
@@ -139,6 +139,7 @@ const actualizarPublicacion = async (req, res) => {
         // Actualizar la publicación
         publicacion.titulo = titulo;
         publicacion.descripcion = descripcion;
+        publicacion.categoria = categoria
         await publicacion.save();
 
         res

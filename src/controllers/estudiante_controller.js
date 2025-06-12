@@ -27,6 +27,12 @@ const login = async (req, res) => {
             .status(404)
             .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
 
+    // Validar si el usuario está inactivado
+    if (estudianteBDD.estado === false)
+        return res
+            .status(403)
+            .json({ msg: "Tu cuenta está inactiva. Comunícate con el administrador." });
+
     if (estudianteBDD.rol !== "estudiante")
         return res
             .status(403)
