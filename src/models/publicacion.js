@@ -35,6 +35,10 @@ const publicacionSchema = new Schema(
             type: Boolean,
             default: true,
         },
+        disponible: {
+            type: Boolean,
+            default: true
+        }
     },
     {
         timestamps: true,

@@ -12,44 +12,44 @@ const crearPublicacion = async (req, res) => {
         if (!titulo || !descripcion || !categoria || !precio) {
             return res
                 .status(400)
-                .json({ msg: "Todos los campos son obligatorios" });
+                .json({ mensaje: "Todos los campos son obligatorios" });
         }
 
         // Obtener el id del autor autenticado
         const autor = req.estudianteBDD?._id;
         if (!autor) {
-            return res.status(401).json({ msg: "No autorizado" });
+            return res.status(401).json({ mensaje: "No autorizado" });
         }
 
         // Validar que el autor exista en la base de datos
         const autorExiste = await Estudiante.findById(autor);
         if (!autorExiste) {
-            return res.status(404).json({ msg: "El autor no existe" });
+            return res.status(404).json({ mensaje: "El autor no existe" });
         }
 
         // Validar que la categoría sea ObjectId válido
         if (!mongoose.Types.ObjectId.isValid(categoria)) {
             return res
                 .status(400)
-                .json({ msg: "Categoría inválida" });
+                .json({ mensaje: "Categoría inválida" });
         }
 
         // Validar que la categoría exista en la base de datos
         const categoriaExiste = await Categoria.findById(categoria);
         if (!categoriaExiste) {
-            return res.status(404).json({ msg: "La categoría no existe" });
+            return res.status(404).json({ mensaje: "La categoría no existe" });
         }
 
         // Validar que el precio sea un número positivo
         /*if (typeof precio !== 'number' || precio < 0) {
             return res
                 .status(400)
-                .json({ msg: "El precio debe ser un número positivo" });
+                .json({ mensaje: "El precio debe ser un número positivo" });
         }*/
 
         // Validar que la imagen exista
         if (!req.file || !req.file.path) {
-            return res.status(400).json({ msg: "La imagen es obligatoria" });
+            return res.status(400).json({ mensaje: "La imagen es obligatoria" });
         }
 
         // Crear y guardar la nueva publicación
@@ -68,7 +68,7 @@ const crearPublicacion = async (req, res) => {
     } catch (error) {
         res
             .status(500)
-            .json({ msg: `Error al crear la publicación`, error: error.message });
+            .json({ mensaje: `Error al crear la publicación`, error: error.message });
             
     }
 }
@@ -83,7 +83,7 @@ const obtenerPublicaciones = async (req, res) => {
     } catch (error) {
         res
             .status(500)
-            .json({ msg: "Error al obtener las publicaciones"});
+            .json({ mensaje: "Error al obtener las publicaciones"});
     }
 }
 
@@ -95,7 +95,7 @@ const verPublicacion = async (req, res) => {
         if (!publicacion) {
             return res
                 .status(404)
-                .json({ msg: 'Publicación no encontrada' });
+                .json({ mensaje: 'Publicación no encontrada' });
         }
         res
             .status(200)
@@ -118,7 +118,7 @@ const actualizarPublicacion = async (req, res) => {
         if (!titulo || !descripcion) {
             return res
                 .status(400)
-                .json({ msg: "Todos los campos son obligatorios" });
+                .json({ mensaje: "Todos los campos son obligatorios" });
         }
 
         // Buscar la publicación
@@ -126,14 +126,14 @@ const actualizarPublicacion = async (req, res) => {
         if (!publicacion) {
             return res
                 .status(404)
-                .json({ msg: 'Publicación no encontrada' });
+                .json({ mensaje: 'Publicación no encontrada' });
         }
 
         // Validar que el estudiante autenticado sea el autor
         if (!req.estudianteBDD || publicacion.autor.toString() !== req.estudianteBDD._id.toString()) {
             return res
                 .status(403)
-                .json({ msg: "No tienes permisos para editar esta publicación" });
+                .json({ mensaje: "No tienes permisos para editar esta publicación" });
         }
 
         // Actualizar la publicación
@@ -143,12 +143,15 @@ const actualizarPublicacion = async (req, res) => {
 
         res
             .status(200)
-            .json(publicacion);
+            .json({ 
+                mensaje: "Publicación editada exitosamente",
+                publicacion
+            });
 
     } catch (error) {
         res
             .status(500)
-            .json({ msg: "Error al actualizar la publicación" });
+            .json({ mensaje: "Error al actualizar la publicación" });
     }
 }
 
@@ -159,7 +162,7 @@ const inactivarPublicacion = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
             .status(400)
-            .json({ msg: 'ID no válido' });
+            .json({ mensaje: 'ID no válido' });
     }
 
     try {
@@ -167,7 +170,7 @@ const inactivarPublicacion = async (req, res) => {
         if (!publicacionInactivada) {
             return res
                 .status(404)
-                .json({ msg: 'Categoría no encontrada' });
+                .json({ mensaje: 'Categoría no encontrada' });
         }
 
         // Validar permisos: solo el autor o un administrador puede cambiar el estado
@@ -176,7 +179,7 @@ const inactivarPublicacion = async (req, res) => {
         if (!esAutor && !esAdmin) {
             return res
                 .status(403)
-                .json({ msg: "No tienes permisos para cambiar el estado de esta publicación" });
+                .json({ mensaje: "No tienes permisos para cambiar el estado de esta publicación" });
         }
 
         publicacionInactivada.estado = !publicacionInactivada.estado;
@@ -189,7 +192,7 @@ const inactivarPublicacion = async (req, res) => {
         res
             .status(200)
             .json({
-                msg: mensaje
+                mensaje: mensaje
             });
 
     } catch (err) {
@@ -200,6 +203,85 @@ const inactivarPublicacion = async (req, res) => {
 
 }
 
+const misPublicaciones = async (req, res) =>{
+    try {
+        // Obtener el id del usuario autenticado
+        const autor = req.estudianteBDD?._id;
+        if (!autor) {
+            return res.status(401).json({ mensaje: "No autorizado" });
+        }
+
+        // Buscar publicaciones del usuario
+        const publicaciones = await Publicacion.find({ autor })
+            .populate('categoria')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(publicaciones);
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al obtener tus publicaciones" });
+    }
+}
+
+
+const eliminarPublicacion = async (req, res) => {
+    const { id } = req.params;
+
+    // Validar que el ID sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ mensaje: 'ID no válido' });
+    }
+
+    try {
+        const publicacion = await Publicacion.findById(id);
+        if (!publicacion) {
+            return res.status(404).json({ mensaje: 'Publicación no encontrada' });
+        }
+
+        // Solo el autor o un administrador puede eliminar la publicación
+        const esAutor = req.estudianteBDD && publicacion.autor.toString() === req.estudianteBDD._id.toString();
+        const esAdmin = req.AdministradorBDD && req.AdministradorBDD.rol === "administrador";
+        if (!esAutor && !esAdmin) {
+            return res.status(403).json({ mensaje: "No tienes permisos para eliminar esta publicación" });
+        }
+
+        await publicacion.deleteOne();
+
+        res.status(200).json({ mensaje: "Publicación eliminada exitosamente" });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al eliminar la publicación" });
+    }
+};
+
+
+const verPublicacionPorId = async (req, res) => {
+    const { id } = req.params;
+
+    // Validar que el ID sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res
+            .status(400)
+            .json({ mensaje: 'ID no válido' });
+    }
+
+    try {
+        const publicacion = await Publicacion.findById(id)
+            .populate('autor')
+            .populate('categoria');
+        if (!publicacion) {
+            return res
+                .status(404)
+                .json({ mensaje: 'Publicación no encontrada' });
+        }
+        res
+            .status(200)
+            .json(publicacion);
+
+    } catch (error) {
+        res
+            .status(500)
+            .json({ mensaje: "Error al obtener la publicación" });
+    }
+};
 
 
 export {
@@ -207,5 +289,8 @@ export {
     obtenerPublicaciones,
     verPublicacion,
     actualizarPublicacion,
-    inactivarPublicacion
+    inactivarPublicacion,
+    misPublicaciones,
+    eliminarPublicacion,
+    verPublicacionPorId
 }
