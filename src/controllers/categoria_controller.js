@@ -39,12 +39,14 @@ const crearCategoria = async (req, res) => {
         });
 
         await categoria.save();
-        res.status(201).json(categoria);
+        res
+            .status(201)
+            .json(categoria);
 
     } catch (err) {
-        /*res.status(400).json({ error: 'Error al crear la categoría' });*/
-        console.error(err); // 👈 Imprime el error en consola
-        res.status(400).json({ error: 'Error al crear la categoría', detalle: err.message });
+        res
+            .status(400)
+            .json({ error: 'Error al crear la categoría', detalle: err.message });
     }
 }
 

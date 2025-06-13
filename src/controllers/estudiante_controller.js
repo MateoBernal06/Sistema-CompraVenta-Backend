@@ -122,19 +122,23 @@ const registro = async (req, res) => {
 const confirmEmail = async (req, res) => {
     if (!req.params.token)
         return res
-        .status(400)
-        .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
+            .status(400)
+            .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
 
     const estudianteBDD = await Estudiante.findOne({ token: req.params.token });
 
     if (!estudianteBDD?.token)
-        return res.status(404).json({ msg: "La cuenta ya ha sido confirmada" });
+        return res
+                .status(404)
+                .json({ msg: "La cuenta ya ha sido confirmada" });
 
     estudianteBDD.token = null;
     estudianteBDD.confirmEmail = true;
     await estudianteBDD.save();
 
-    res.status(200).json({ msg: "Token confirmado, ya puedes iniciar sesión" });
+    res
+        .status(200)
+        .json({ msg: "Token confirmado, ya puedes iniciar sesión" });
 };
 
 
@@ -143,13 +147,13 @@ const recuperarPassword = async (req, res) => {
     const { email } = req.body;
     if (Object.values(req.body).includes(""))
         return res
-        .status(404)
-        .json({ msg: "Lo sentimos, debes llenar todos los campos" });
+            .status(404)
+            .json({ msg: "Lo sentimos, debes llenar todos los campos" });
     const estudianteBDD = await Estudiante.findOne({ email });
     if (!estudianteBDD)
         return res
-        .status(404)
-        .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
+            .status(404)
+            .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
     
     // Validar que el usuario tenga el rol de estudiante
     if (estudianteBDD.rol !== "estudiante")
@@ -171,13 +175,13 @@ const recuperarPassword = async (req, res) => {
 const comprobarTokenPasword = async (req, res) => {
     if (!req.params.token)
         return res
-        .status(404)
-        .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
+            .status(404)
+            .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
     const estudianteBDD = await Estudiante.findOne({ token: req.params.token });
     if (estudianteBDD?.token !== req.params.token)
         return res
-        .status(404)
-        .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
+            .status(404)
+            .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
     await estudianteBDD.save();
     res
         .status(200)
