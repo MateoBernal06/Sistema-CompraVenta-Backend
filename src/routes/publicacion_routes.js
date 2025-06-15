@@ -10,7 +10,8 @@ import {
     inactivarPublicacion,
     misPublicaciones, 
     eliminarPublicacion, 
-    verPublicacionPorId
+    verPublicacionPorId,
+    publicacionVendida,
 } from '../controllers/publicacion_controller.js';
 
 const router = Router();
@@ -23,5 +24,6 @@ router.put('/publicacion/:id', verificarAutenticacion, actualizarPublicacion);
 router.patch('/publicacion/:id', verificarAutenticacion, inactivarPublicacion);
 router.delete('/publicacion/:id', verificarAutenticacion, eliminarPublicacion);
 router.get('/publicacion/detalle/:id', verificarAutenticacion, verPublicacionPorId);
+router.patch('/publicacion/:id/vendida', verificarAutenticacion, publicacionVendida);
 
 export default router;

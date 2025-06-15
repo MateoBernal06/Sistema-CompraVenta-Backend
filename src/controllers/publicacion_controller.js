@@ -76,10 +76,15 @@ const crearPublicacion = async (req, res) => {
 
 const obtenerPublicaciones = async (req, res) => {
     try {
-        const publicaciones = await Publicacion.find().populate('autor').populate('categoria');
+        const publicaciones = await Publicacion.find({ disponible: true })
+            .populate('autor')
+            .populate('categoria')
+            .sort({ createdAt: -1 });
+
         res
             .status(200)
             .json(publicaciones);
+
     } catch (error) {
         res
             .status(500)
@@ -212,8 +217,8 @@ const misPublicaciones = async (req, res) =>{
             return res.status(401).json({ msg: "No autorizado" });
         }
 
-        // Buscar publicaciones del usuario
-        const publicaciones = await Publicacion.find({ autor })
+        // Solo publicaciones disponibles
+        const publicaciones = await Publicacion.find({ autor, disponible: true })
             .populate('categoria')
             .sort({ createdAt: -1 });
 
@@ -285,6 +290,53 @@ const verPublicacionPorId = async (req, res) => {
 };
 
 
+const publicacionVendida = async (req, res) => {
+    const { id } = req.params;
+
+    // Validar que el ID sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res
+            .status(400)
+            .json({ msg: 'ID no válido' });
+    }
+
+    try {
+        const publicacionVendida = await Publicacion.findByIdAndUpdate(id);
+        if (!publicacionVendida) {
+            return res
+                .status(404)
+                .json({ msg: 'Publicación no encontrada' });
+        }
+
+        // Validar permisos: solo el autor puede cambiar el estado
+        const esAutor = req.estudianteBDD && publicacionVendida.autor.toString() === req.estudianteBDD._id.toString();
+        if (!esAutor) {
+            return res
+                .status(403)
+                .json({ msg: "No tienes permisos para cambiar el estado de esta publicación" });
+        }
+
+        publicacionVendida.disponible = !publicacionVendida.disponible;
+        await publicacionVendida.save();
+
+        const msg = publicacionVendida.disponible
+            ? 'Publicación marcada como vendida exitosamente'
+            : 'Publicación desmarcada como vendida exitosamente';
+
+        res
+            .status(200)
+            .json({
+                msg: msg
+            });
+
+    } catch (err) {
+        res
+            .status(400)
+            .json({ error: 'Error al cambiar el estado de la publicación' });
+    }
+}
+
+
 export {
     crearPublicacion,
     obtenerPublicaciones,
@@ -293,5 +345,6 @@ export {
     inactivarPublicacion,
     misPublicaciones,
     eliminarPublicacion,
-    verPublicacionPorId
+    verPublicacionPorId,
+    publicacionVendida,
 }
