@@ -76,14 +76,21 @@ const crearPublicacion = async (req, res) => {
 
 const obtenerPublicaciones = async (req, res) => {
     try {
-        const publicaciones = await Publicacion.find({ disponible: true })
-            .populate('autor')
-            .populate('categoria')
-            .sort({ createdAt: -1 });
+        let publicaciones;
 
-        res
-            .status(200)
-            .json(publicaciones);
+        if (req.AdministradorBDD && req.AdministradorBDD.rol === "administrador") {
+            publicaciones = await Publicacion.find()
+                .populate('autor')
+                .populate('categoria')
+                .sort({ createdAt: -1 });
+        } else {
+            publicaciones = await Publicacion.find({ disponible: true })
+                .populate('autor')
+                .populate('categoria')
+                .sort({ createdAt: -1 });
+        }
+
+        res.status(200).json(publicaciones);
 
     } catch (error) {
         res
@@ -211,18 +218,30 @@ const inactivarPublicacion = async (req, res) => {
 
 const misPublicaciones = async (req, res) =>{
     try {
-        // Obtener el id del usuario autenticado
+        // Si es administrador, puede consultar por query param o params
+        if (req.AdministradorBDD && req.AdministradorBDD.rol === "administrador") {
+            const { id } = req.params;
+            if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+                return res.status(400).json({ msg: "ID de usuario no válido" });
+            }
+            const publicaciones = await Publicacion.find({ autor: id })
+                .populate('categoria')
+                .sort({ createdAt: -1 });
+            return res
+                .status(200)
+                .json(publicaciones);
+        }
+
+        // Si es estudiante, solo puede ver sus propias publicaciones
         const autor = req.estudianteBDD?._id;
         if (!autor) {
             return res.status(401).json({ msg: "No autorizado" });
         }
-
-        // Solo publicaciones disponibles
-        const publicaciones = await Publicacion.find({ autor, disponible: true })
+        const publicaciones = await Publicacion.find({ autor })
             .populate('categoria')
             .sort({ createdAt: -1 });
-
         res.status(200).json(publicaciones);
+
     } catch (error) {
         res.status(500).json({ msg: "Error al obtener tus publicaciones" });
     }

@@ -25,5 +25,6 @@ router.patch('/publicacion/:id', verificarAutenticacion, inactivarPublicacion);
 router.delete('/publicacion/:id', verificarAutenticacion, eliminarPublicacion);
 router.get('/publicacion/detalle/:id', verificarAutenticacion, verPublicacionPorId);
 router.patch('/publicacion/:id/vendida', verificarAutenticacion, publicacionVendida);
+router.get('/publicacion/:id/usuario', verificarAutenticacion, misPublicaciones);
 
 export default router;
