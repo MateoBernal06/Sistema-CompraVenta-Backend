@@ -339,8 +339,8 @@ const publicacionVendida = async (req, res) => {
         await publicacionVendida.save();
 
         const msg = publicacionVendida.disponible
-            ? 'Publicación marcada como vendida exitosamente'
-            : 'Publicación desmarcada como vendida exitosamente';
+            ? 'Publicación desmarcada como vendida exitosamente'
+            : 'Publicación marcada como vendida exitosamente';
 
         res
             .status(200)

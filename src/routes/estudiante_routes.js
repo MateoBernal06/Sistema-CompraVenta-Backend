@@ -10,7 +10,9 @@ import {
     nuevoPassword,
     inactivarEstudiante,
     buscarEstudiante,
-    verTodosEstudiantes
+    verTodosEstudiantes,
+    cambiarPassword,
+    actualizarDatosEstudiante
 } from "../controllers/estudiante_controller.js";
 
 
@@ -26,5 +28,7 @@ router.post("/nuevo-password/:token", nuevoPassword);
 router.patch("/estudiantes/:id", verificarAutenticacion, inactivarEstudiante);
 router.get("/estudiantes/:email", verificarAutenticacion, buscarEstudiante);
 router.get("/estudiantes", verificarAutenticacion, verTodosEstudiantes);
+router.patch("/cambiar-password", verificarAutenticacion, cambiarPassword);
+router.patch("/actualizar-datos", verificarAutenticacion, actualizarDatosEstudiante);
 
 export default router;

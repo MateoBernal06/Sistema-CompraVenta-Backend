@@ -49,4 +49,108 @@ const loginAdministrador = async (req, res) => {
     });
 };
 
-export { loginAdministrador };
+
+const actualizarPassword = async (req, res) => {
+    
+    const { passwordActual, nuevaPassword, repetirPassword } = req.body;
+
+    // Validar que todos los campos estén llenos y no sean solo espacios
+    if (
+        !passwordActual || !nuevaPassword || !repetirPassword ||
+        passwordActual.trim() === "" || nuevaPassword.trim() === "" || repetirPassword.trim() === ""
+    ) {
+        return res.status(400).json({ msg: "Todos los campos son obligatorios" });
+    }
+
+    // Validar que la nueva contraseña tenga al menos una mayúscula
+    if (!/[A-Z]/.test(nuevaPassword)) {
+        return res.status(400).json({ msg: "La contraseña debe tener al menos una letra mayúscula" });
+    }
+
+    // Validar que la nueva contraseña tenga al menos un número
+    if (!/\d/.test(nuevaPassword)) {
+        return res.status(400).json({ msg: "La contraseña debe contener al menos un número" });
+    }
+
+    // Validar que la nueva contraseña tenga al menos 8 caracteres
+    if (nuevaPassword.length < 8) {
+        return res.status(400).json({ msg: "La nueva contraseña debe tener al menos 8 caracteres" });
+    }
+
+    // Validar que las nuevas contraseñas coincidan
+    if (nuevaPassword !== repetirPassword) {
+        return res.status(400).json({ msg: "Las nuevas contraseñas no coinciden" });
+    }
+
+    // Buscar al administrador autenticado
+    if (!req.AdministradorBDD || !req.AdministradorBDD._id) {
+        return res.status(401).json({ msg: "No autorizado" });
+    }
+
+    const admin = await Administrador.findById(req.AdministradorBDD._id);
+    if (!admin) {
+        return res.status(404).json({ msg: "Administrador no encontrado" });
+    }
+
+    // Validar la contraseña actual
+    const passwordValido = await admin.matchPassword(passwordActual);
+    if (!passwordValido) {
+        return res.status(400).json({ msg: "La contraseña actual es incorrecta" });
+    }
+
+    // Cambiar la contraseña
+    admin.password = await admin.encrypPassword(nuevaPassword);
+    await admin.save();
+
+    res.status(200).json({ msg: "Contraseña actualizada exitosamente" });
+
+};
+
+
+const actualizarDatosAdministrador = async (req, res) => {
+    try {
+        const { nombre, apellido, celular, direccion } = req.body;
+
+        // Validar que todos los campos estén llenos y no sean solo espacios
+        if (
+            !nombre || !apellido || !celular || !direccion ||
+            nombre.trim() === "" || apellido.trim() === "" || celular.trim() === "" || direccion.trim() === ""
+        ) {
+            return res.status(400).json({ msg: "Todos los campos son obligatorios" });
+        }
+
+        // Validar que el número de celular tenga 10 dígitos
+        if (!/^\d{10}$/.test(celular)) {
+            return res.status(400).json({ msg: "El número de celular debe tener 10 dígitos" });
+        }
+
+        // Buscar al administrador autenticado
+        if (!req.AdministradorBDD || !req.AdministradorBDD._id) {
+            return res.status(401).json({ msg: "No autorizado" });
+        }
+        const admin = await Administrador.findById(req.AdministradorBDD._id);
+        if (!admin) {
+            return res.status(404).json({ msg: "Administrador no encontrado" });
+        }
+
+        // Actualizar los datos del administrador
+        admin.nombre = nombre;
+        admin.apellido = apellido;
+        admin.celular = celular;
+        admin.direccion = direccion;
+
+        await admin.save();
+
+        res.status(200).json({ msg: "Datos actualizados exitosamente" });
+
+    } catch (error) {
+        res.status(500).json({ msg: "Error al actualizar los datos" });
+    }
+};
+
+
+export {
+    loginAdministrador,
+    actualizarPassword,
+    actualizarDatosAdministrador
+};
