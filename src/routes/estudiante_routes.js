@@ -12,7 +12,8 @@ import {
     buscarEstudiante,
     verTodosEstudiantes,
     cambiarPassword,
-    actualizarDatosEstudiante
+    actualizarDatosEstudiante,
+    estudiantePerfil
 } from "../controllers/estudiante_controller.js";
 
 
@@ -25,6 +26,7 @@ router.post("/recuperar-password", recuperarPassword);
 router.get("/comprobar-token/:token", comprobarTokenPasword);
 router.post("/nuevo-password/:token", nuevoPassword);
 
+router.get('/estudiante/perfil', verificarAutenticacion, estudiantePerfil);
 router.patch("/estudiantes/:id", verificarAutenticacion, inactivarEstudiante);
 router.get("/estudiantes/:email", verificarAutenticacion, buscarEstudiante);
 router.get("/estudiantes", verificarAutenticacion, verTodosEstudiantes);

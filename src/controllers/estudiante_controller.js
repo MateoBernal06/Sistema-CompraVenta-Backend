@@ -56,13 +56,7 @@ const login = async (req, res) => {
 
     res.status(200).json({
         token,
-        nombre,
-        apellido,
-        celular,
-        direccion,
-        estado,
         _id,
-        email: estudianteBDD.email,
         rol: "estudiante"
     });
 };
@@ -377,6 +371,16 @@ const actualizarDatosEstudiante = async (req, res) => {
             return res.status(404).json({ msg: "Usuario no encontrado" });
         }
 
+        // Validar si los datos son los mismos
+        if (
+            estudiante.nombre === nombre &&
+            estudiante.apellido === apellido &&
+            estudiante.celular === celular &&
+            estudiante.direccion === direccion
+        ) {
+            return res.status(200).json({ msg: "No se realizaron cambios, los datos son los mismos." });
+        }
+
         // Actualizar los datos del estudiante
         estudiante.nombre = nombre;
         estudiante.apellido = apellido;
@@ -393,6 +397,22 @@ const actualizarDatosEstudiante = async (req, res) => {
 }
 
 
+const estudiantePerfil = async (req, res) => {
+    try {
+        // req.estudianteBDD debe estar definido por el middleware de autenticación
+        if (!req.estudianteBDD) {
+            return res.status(401).json({ msg: "No autorizado" });
+        }
+
+        // Puedes excluir campos sensibles si lo deseas
+        const { password, ...datos } = req.estudianteBDD;
+        res.status(200).json(datos);
+
+    } catch (error) {
+        res.status(500).json({ msg: "Error al obtener los datos del usuario" });
+    }
+}
+
 export { 
     registro, 
     confirmEmail, 
@@ -404,7 +424,8 @@ export {
     buscarEstudiante,
     inactivarEstudiante,
     cambiarPassword,
-    actualizarDatosEstudiante
+    actualizarDatosEstudiante,
+    estudiantePerfil
 };
 
 

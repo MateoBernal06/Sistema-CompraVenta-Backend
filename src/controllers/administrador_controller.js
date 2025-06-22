@@ -35,15 +35,10 @@ const loginAdministrador = async (req, res) => {
 
     const token = generarJWT(administradorBDD._id, "administrador");
 
-    const { nombre, apellido, email: emailA, celular, direccion, _id } = administradorBDD;
+    const { _id } = administradorBDD;
 
     res.status(200).json({
         token,
-        nombre,
-        apellido,
-        direccion,
-        emailA,
-        celular,
         rol: "administrador",
         _id,
     });
@@ -133,6 +128,16 @@ const actualizarDatosAdministrador = async (req, res) => {
             return res.status(404).json({ msg: "Administrador no encontrado" });
         }
 
+        // Validar si los datos son los mismos
+        if (
+            admin.nombre === nombre &&
+            admin.apellido === apellido &&
+            admin.celular === celular &&
+            admin.direccion === direccion
+        ) {
+            return res.status(200).json({ msg: "No se realizaron cambios, los datos son los mismos." });
+        }
+
         // Actualizar los datos del administrador
         admin.nombre = nombre;
         admin.apellido = apellido;
@@ -149,8 +154,25 @@ const actualizarDatosAdministrador = async (req, res) => {
 };
 
 
+const administradorPerfil = async (req, res) => {
+    try {
+        if (!req.AdministradorBDD) {
+            return res.status(401).json({ msg: "No autorizado" });
+        }
+
+        // Puedes excluir campos sensibles si lo deseas
+        const { password, ...datos } = req.AdministradorBDD;
+        res.status(200).json(datos);
+
+    } catch (error) {
+        res.status(500).json({ msg: "Error al obtener los datos del usuario" });
+    }
+};
+
+
 export {
     loginAdministrador,
     actualizarPassword,
-    actualizarDatosAdministrador
+    actualizarDatosAdministrador,
+    administradorPerfil
 };
