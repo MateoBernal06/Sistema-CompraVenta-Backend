@@ -183,7 +183,7 @@ const inactivarPublicacion = async (req, res) => {
         if (!publicacionInactivada) {
             return res
                 .status(404)
-                .json({ msg: 'Categoría no encontrada' });
+                .json({ msg: 'Publicación no encontrada' });
         }
 
         // Validar permisos: solo el autor o un administrador puede cambiar el estado

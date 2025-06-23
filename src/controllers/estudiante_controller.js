@@ -81,10 +81,24 @@ const registro = async (req, res) => {
             .json({ msg: "El número de celular debe tener 10 dígitos" });
     
      // Validar que la contraseña tenga mínimo 6 caracteres
-    if (!password || password.length < 6)
+    if (!password || password.length < 8)
         return res
             .status(400)
-            .json({ msg: "La contraseña debe tener minimo 6 digitos" });
+            .json({ msg: "La contraseña debe tener minimo 8 digitos" });
+
+
+    // Validar que la nueva contraseña tenga al menos un número
+    if (!/\d/.test(password))
+        return res
+            .status(400)
+            .json({ msg: "La contraseña debe contener al menos un número" });
+
+
+    // Validar que la nueva contraseña tenga al menos una mayúscula
+    if (!/[A-Z]/.test(password))
+        return res
+            .status(400)
+            .json({ msg: "La contraseña debe contener al menos una mayúscula" });
 
     // Obtener el usuario de la BDD en base al email
     const verificarEmailBDD = await Estudiante.findOne({ email });
