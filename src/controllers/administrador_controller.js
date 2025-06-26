@@ -6,42 +6,47 @@ import generarJWT from "../helpers/createJWT.js";
 //? Login
 //-------------------------------------------------------------------
 const loginAdministrador = async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    if (Object.values(req.body).includes(""))
-        return res
-        .status(404)
-        .json({ msg: "Lo sentimos, debes llenar todos los campos" });
+        if (Object.values(req.body).includes(""))
+            return res
+            .status(400)
+            .json({ msg: "Lo sentimos, debes llenar todos los campos" });
 
-    const administradorBDD = await Administrador.findOne({ email });
+        const administradorBDD = await Administrador.findOne({ email });
 
-    if (!administradorBDD)
-        return res
-        .status(404)
-        .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
+        if (!administradorBDD)
+            return res
+            .status(404)
+            .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
 
-    // Validar que el usuario tenga el rol de administrador
-    if (administradorBDD.rol !== "administrador")
-        return res
-            .status(403)
-            .json({ msg: "Acceso denegado: no tienes permisos de administrador" });
+        // Validar que el usuario tenga el rol de administrador
+        if (administradorBDD.rol !== "administrador")
+            return res
+                .status(403)
+                .json({ msg: "Acceso denegado: no tienes permisos de administrador" });
 
-    const verificarPassword = await administradorBDD.matchPassword(password);
+        const verificarPassword = await administradorBDD.matchPassword(password);
 
-    if (!verificarPassword)
-        return res
-        .status(404)
-        .json({ msg: "Lo sentimos, el password no es el correcto" });
+        if (!verificarPassword)
+            return res
+            .status(404)
+            .json({ msg: "Lo sentimos, el password no es el correcto" });
 
-    const token = generarJWT(administradorBDD._id, "administrador");
+        const token = generarJWT(administradorBDD._id, "administrador");
 
-    const { _id } = administradorBDD;
+        const { _id } = administradorBDD;
 
-    res.status(200).json({
-        token,
-        rol: "administrador",
-        _id,
-    });
+        res.status(200).json({
+            token,
+            rol: "administrador",
+            _id,
+        });
+    } catch (error) {
+        console.error("Error en loginAdministrador:", error);
+        res.status(500).json({ msg: "Error en el servidor" });
+    }
 };
 
 

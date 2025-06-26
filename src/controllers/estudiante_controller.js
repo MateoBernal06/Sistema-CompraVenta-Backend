@@ -11,54 +11,59 @@ import mongoose from "mongoose";
 
 // Método para el login
 const login = async (req, res) => {
-    const { email, password } = req.body;
+    try{
+        const { email, password } = req.body;
 
-    if (Object.values(req.body).includes(""))
-        return res
-            .status(400)
-            .json({ msg: "Lo sentimos, debes llenar todos los campos" });
+        if (Object.values(req.body).includes(""))
+            return res
+                .status(400)
+                .json({ msg: "Lo sentimos, debes llenar todos los campos" });
 
-    const estudianteBDD = await Estudiante.findOne({ email }).select(
-        "-status -__v -token -updatedAt -createdAt"
-    );
+        const estudianteBDD = await Estudiante.findOne({ email }).select(
+            "-status -__v -token -updatedAt -createdAt"
+        );
 
-    if (!estudianteBDD)
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
+        if (!estudianteBDD)
+            return res
+                .status(404)
+                .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
 
-    // Validar si el usuario está inactivado
-    if (estudianteBDD.estado === false)
-        return res
-            .status(403)
-            .json({ msg: "Tu cuenta está inactiva. Comunícate con el administrador." });
+        // Validar si el usuario está inactivado
+        if (estudianteBDD.estado === false)
+            return res
+                .status(403)
+                .json({ msg: "Tu cuenta está inactiva. Comunícate con el administrador." });
 
-    if (estudianteBDD.rol !== "estudiante")
-        return res
-            .status(403)
-            .json({ msg: "Acceso denegado: no tienes permisos de estudiante" });
+        if (estudianteBDD.rol !== "estudiante")
+            return res
+                .status(403)
+                .json({ msg: "Acceso denegado: no tienes permisos de estudiante" });
 
-    if (estudianteBDD?.confirmEmail === false)
-        return res
-            .status(403)
-            .json({ msg: "Lo sentimos, debe verificar su cuenta" });
+        if (estudianteBDD?.confirmEmail === false)
+            return res
+                .status(403)
+                .json({ msg: "Lo sentimos, debe verificar su cuenta" });
 
-    const verificarPassword = await estudianteBDD.matchPassword(password);
+        const verificarPassword = await estudianteBDD.matchPassword(password);
 
-    if (!verificarPassword)
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, el password no es el correcto" });
+        if (!verificarPassword)
+            return res
+                .status(404)
+                .json({ msg: "Lo sentimos, el password no es el correcto" });
 
-    const token = generarJWT(estudianteBDD._id, "estudiante");
+        const token = generarJWT(estudianteBDD._id, "estudiante");
 
-    const { nombre, apellido, celular, direccion, estado, _id } = estudianteBDD;
+        const { nombre, apellido, celular, direccion, estado, _id } = estudianteBDD;
 
-    res.status(200).json({
-        token,
-        _id,
-        rol: "estudiante"
-    });
+        res.status(200).json({
+            token,
+            _id,
+            rol: "estudiante"
+        });
+    } catch (error) {
+        console.error("Error en el login:", error);
+        res.status(500).json({ msg: "Error interno del servidor" });
+    }
 };
 
 
