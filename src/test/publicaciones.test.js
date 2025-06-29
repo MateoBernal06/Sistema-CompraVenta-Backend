@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { jest } from '@jest/globals';
 
 import {
@@ -8,6 +7,7 @@ import {
     eliminarPublicacion,
     verPublicacionPorId,
     publicacionVendida,
+    obtenerPublicaciones
 } from '../controllers/publicacion_controller.js';
 
 
@@ -104,3 +104,4 @@ describe('publicacionVendida - validaciones', () => {
         expect(res.json).toHaveBeenCalledWith({ msg: 'ID no válido' });
     });
 });
+
