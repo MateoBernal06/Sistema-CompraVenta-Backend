@@ -4,15 +4,16 @@ mongoose.set("strictQuery", true);
 
 const connection = async () => {
     try {
-        const { connection } = await mongoose.connect(
-        process.env.MONGODB_URI_ATLAS || process.env.MONGODB_URI_LOCAL 
-        );
-        console.log(
-        `Database is connected on ${connection.host} - ${connection.port}`
-        );
+        const conn = await mongoose.connect(process.env.MONGODB_URI_ATLAS);
+
+        console.log("Database connected successfully");
+        console.log(`Database: ${conn.connection.name}`);
+        console.log(`Host: ${conn.connection.host}`);
     } catch (error) {
-        console.log(error);
+        console.error("Error connecting to MongoDB Atlas:");
+        console.error(error.message);
     }
 };
 
 export default connection;
+
