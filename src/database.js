@@ -6,7 +6,7 @@ const connection = async () => {
     try {
         const conn = await mongoose.connect(process.env.MONGODB_URI_ATLAS);
 
-        console.log("Database connected successfully");
+        console.log("Database connected successfully!!");
         console.log(`Database: ${conn.connection.name}`);
         console.log(`Host: ${conn.connection.host}`);
     } catch (error) {
