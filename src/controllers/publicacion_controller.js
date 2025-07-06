@@ -84,11 +84,7 @@ const obtenerPublicaciones = async (req, res) => {
                 .populate('categoria')
                 .sort({ createdAt: -1 });
         } else {
-            const autorLogueado = req.estudianteBDD?._id;
-            publicaciones = await Publicacion.find({
-                    disponible: true,
-                    ...(autorLogueado && { autor: { $ne: autorLogueado } })
-                })
+            publicaciones = await Publicacion.find({ disponible: true })
                 .populate('autor')
                 .populate('categoria')
                 .sort({ createdAt: -1 });
