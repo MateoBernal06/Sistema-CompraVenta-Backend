@@ -2,6 +2,7 @@
 import { sendMailToUser,sendMailToRecoveryPassword } from "../config/nodemailer.js";
 import generarJWT from "../helpers/createJWT.js";
 import Estudiante from "../models/estudiante.js";
+import administrador from "../models/administrador.js";
 import mongoose from "mongoose";
 
 
@@ -162,21 +163,28 @@ const recuperarPassword = async (req, res) => {
         return res
             .status(404)
             .json({ msg: "Lo sentimos, debes llenar todos los campos" });
-    const estudianteBDD = await Estudiante.findOne({ email });
-    if (!estudianteBDD)
+    
+    // Buscar primero en estudiantes
+    let usuarioBDD = await Estudiante.findOne({ email });
+    
+    // Si no se encuentra en estudiantes, buscar en administradores
+    if (!usuarioBDD) {
+        usuarioBDD = await Administrador.findOne({ email });
+    }
+    
+    if (!usuarioBDD)
         return res
             .status(404)
             .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
             
-    const token = estudianteBDD.crearToken();
-    estudianteBDD.token = token;
+    const token = usuarioBDD.crearToken();
+    usuarioBDD.token = token;
     await sendMailToRecoveryPassword(email, token);
-    await estudianteBDD.save();
+    await usuarioBDD.save();
     res
         .status(200)
         .json({ msg: "Revisa tu correo electrónico para reestablecer tu cuenta" });
 };
-
 
 // Método para comprobar el token
 const comprobarTokenPasword = async (req, res) => {
@@ -184,17 +192,25 @@ const comprobarTokenPasword = async (req, res) => {
         return res
             .status(404)
             .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    const estudianteBDD = await Estudiante.findOne({ token: req.params.token });
-    if (estudianteBDD?.token !== req.params.token)
+    
+    // Buscar el token en estudiantes
+    let usuarioBDD = await Estudiante.findOne({ token: req.params.token });
+    
+    // Si no se encuentra en estudiantes, buscar en administradores
+    if (!usuarioBDD) {
+        usuarioBDD = await Administrador.findOne({ token: req.params.token });
+    }
+    
+    if (!usuarioBDD || usuarioBDD?.token !== req.params.token)
         return res
             .status(404)
             .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    await estudianteBDD.save();
+    
+    await usuarioBDD.save();
     res
         .status(200)
         .json({ msg: "Token confirmado, ya puedes crear tu nuevo password" });
 };
-
 
 // Método para crear el nuevo password
 const nuevoPassword = async (req, res) => {
@@ -204,25 +220,45 @@ const nuevoPassword = async (req, res) => {
         .status(404)
         .json({ msg: "Lo sentimos, debes llenar todos los campos" });
 
-    // Validar que la contraseña tenga mínimo 6 caracteres
-    if (!password || password.length < 6)
+    // Validar que la contraseña tenga mínimo 8 caracteres
+    if (!password || password.length < 8)
         return res
             .status(400)
-            .json({ msg: "La contraseña debe tener al menos 6 caracteres" });
+            .json({ msg: "La contraseña debe tener al menos 8 caracteres" });
+
+    // Validar que la nueva contraseña tenga al menos un número
+    if (!/\d/.test(password))
+        return res
+            .status(400)
+            .json({ msg: "La contraseña debe contener al menos un número" });
+
+    // Validar que la nueva contraseña tenga al menos una mayúscula
+    if (!/[A-Z]/.test(password))
+        return res
+            .status(400)
+            .json({ msg: "La contraseña debe contener al menos una mayúscula" });
 
     if (password != confirmpassword)
         return res
         .status(400)
         .json({ msg: "Lo sentimos, los passwords no coinciden" });
-    const estudianteBDD = await Estudiante.findOne({ token: req.params.token });
     
-    if (estudianteBDD?.token !== req.params.token)
+    // Buscar el token en estudiantes
+    let usuarioBDD = await Estudiante.findOne({ token: req.params.token });
+    
+    // Si no se encuentra en estudiantes, buscar en administradores
+    if (!usuarioBDD) {
+        usuarioBDD = await Administrador.findOne({ token: req.params.token });
+    }
+    
+    if (!usuarioBDD || usuarioBDD?.token !== req.params.token)
         return res
         .status(400)
         .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    estudianteBDD.token = null;
-    estudianteBDD.password = await estudianteBDD.encrypPassword(password);
-    await estudianteBDD.save();
+    
+    usuarioBDD.token = null;
+    usuarioBDD.password = await usuarioBDD.encrypPassword(password);
+    await usuarioBDD.save();
     res
         .status(200)
         .json({
