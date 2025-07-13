@@ -239,7 +239,7 @@ const nuevoPassword = async (req, res) => {
 
 const verTodosEstudiantes = async (req, res) => {
     try {
-        const estudiantes = await Estudiante.find();
+        const estudiantes = await Estudiante.find().sort({ apellido: 1 });
         res
             .status(200)
             .json(estudiantes);

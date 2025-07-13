@@ -52,7 +52,7 @@ const crearCategoria = async (req, res) => {
 
 const verTodasCategorias = async (req, res) => {
     try {
-        const categorias = await Categoria.find();
+        const categorias = await Categoria.find().sort({ nombre: 1 });
         res
             .status(200)
             .json(categorias);
