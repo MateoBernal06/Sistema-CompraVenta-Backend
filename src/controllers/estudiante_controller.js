@@ -161,112 +161,136 @@ const confirmEmail = async (req, res) => {
 
 // Método para recuperar el password
 const recuperarPassword = async (req, res) => {
-    const { email } = req.body;
-    if (Object.values(req.body).includes(""))
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, debes llenar todos los campos" });
-    
-    // Buscar primero en estudiantes
-    let usuarioBDD = await Estudiante.findOne({ email });
-    
-    // Si no se encuentra en estudiantes, buscar en administradores
-    if (!usuarioBDD) {
-        usuarioBDD = await Administrador.findOne({ email });
-    }
-    
-    if (!usuarioBDD)
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
+    try {
+        const { email } = req.body;
+        if (Object.values(req.body).includes(""))
+            return res
+                .status(404)
+                .json({ msg: "Lo sentimos, debes llenar todos los campos" });
+        
+        // Buscar primero en estudiantes
+        let usuarioBDD = await Estudiante.findOne({ email });
+        
+        // Si no se encuentra en estudiantes, buscar en administradores
+        if (!usuarioBDD) {
+            usuarioBDD = await Administrador.findOne({ email });
+        }
+        
+        if (!usuarioBDD)
+            return res
+                .status(404)
+                .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
+                
+        const token = usuarioBDD.crearToken();
+        usuarioBDD.token = token;
+        await sendMailToRecoveryPassword(email, token);
+        await usuarioBDD.save();
+        res
+            .status(200)
+            .json({ msg: "Revisa tu correo electrónico para reestablecer tu cuenta" });
             
-    const token = usuarioBDD.crearToken();
-    usuarioBDD.token = token;
-    await sendMailToRecoveryPassword(email, token);
-    await usuarioBDD.save();
-    res
-        .status(200)
-        .json({ msg: "Revisa tu correo electrónico para reestablecer tu cuenta" });
+    } catch (error) {
+        console.error("Error en recuperarPassword:", error);
+        res
+            .status(500)
+            .json({ msg: "Error interno del servidor" });
+    }
 };
 
 // Método para comprobar el token
 const comprobarTokenPasword = async (req, res) => {
-    if (!req.params.token)
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    
-    // Buscar el token en estudiantes
-    let usuarioBDD = await Estudiante.findOne({ token: req.params.token });
-    
-    // Si no se encuentra en estudiantes, buscar en administradores
-    if (!usuarioBDD) {
-        usuarioBDD = await Administrador.findOne({ token: req.params.token });
+    try {
+        if (!req.params.token)
+            return res
+                .status(404)
+                .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
+        
+        // Buscar el token en estudiantes
+        let usuarioBDD = await Estudiante.findOne({ token: req.params.token });
+        
+        // Si no se encuentra en estudiantes, buscar en administradores
+        if (!usuarioBDD) {
+            usuarioBDD = await Administrador.findOne({ token: req.params.token });
+        }
+        
+        if (!usuarioBDD || usuarioBDD?.token !== req.params.token)
+            return res
+                .status(404)
+                .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
+        
+        await usuarioBDD.save();
+        res
+            .status(200)
+            .json({ msg: "Token confirmado, ya puedes crear tu nuevo password" });
+            
+    } catch (error) {
+        console.error("Error en comprobarTokenPasword:", error);
+        res
+            .status(500)
+            .json({ msg: "Error interno del servidor" });
     }
-    
-    if (!usuarioBDD || usuarioBDD?.token !== req.params.token)
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    
-    await usuarioBDD.save();
-    res
-        .status(200)
-        .json({ msg: "Token confirmado, ya puedes crear tu nuevo password" });
 };
 
 // Método para crear el nuevo password
 const nuevoPassword = async (req, res) => {
-    const { password, confirmpassword } = req.body;
-    if (Object.values(req.body).includes(""))
-        return res
-        .status(404)
-        .json({ msg: "Lo sentimos, debes llenar todos los campos" });
+    try {
+        const { password, confirmpassword } = req.body;
+        if (Object.values(req.body).includes(""))
+            return res
+            .status(404)
+            .json({ msg: "Lo sentimos, debes llenar todos los campos" });
 
-    // Validar que la contraseña tenga mínimo 8 caracteres
-    if (!password || password.length < 8)
-        return res
+        // Validar que la contraseña tenga mínimo 8 caracteres
+        if (!password || password.length < 8)
+            return res
+                .status(400)
+                .json({ msg: "La contraseña debe tener al menos 8 caracteres" });
+
+        // Validar que la nueva contraseña tenga al menos un número
+        if (!/\d/.test(password))
+            return res
+                .status(400)
+                .json({ msg: "La contraseña debe contener al menos un número" });
+
+        // Validar que la nueva contraseña tenga al menos una mayúscula
+        if (!/[A-Z]/.test(password))
+            return res
+                .status(400)
+                .json({ msg: "La contraseña debe contener al menos una mayúscula" });
+
+        if (password != confirmpassword)
+            return res
             .status(400)
-            .json({ msg: "La contraseña debe tener al menos 8 caracteres" });
-
-    // Validar que la nueva contraseña tenga al menos un número
-    if (!/\d/.test(password))
-        return res
+            .json({ msg: "Lo sentimos, los passwords no coinciden" });
+        
+        // Buscar el token en estudiantes
+        let usuarioBDD = await Estudiante.findOne({ token: req.params.token });
+        
+        // Si no se encuentra en estudiantes, buscar en administradores
+        if (!usuarioBDD) {
+            usuarioBDD = await Administrador.findOne({ token: req.params.token });
+        }
+        
+        if (!usuarioBDD || usuarioBDD?.token !== req.params.token)
+            return res
             .status(400)
-            .json({ msg: "La contraseña debe contener al menos un número" });
-
-    // Validar que la nueva contraseña tenga al menos una mayúscula
-    if (!/[A-Z]/.test(password))
-        return res
-            .status(400)
-            .json({ msg: "La contraseña debe contener al menos una mayúscula" });
-
-    if (password != confirmpassword)
-        return res
-        .status(400)
-        .json({ msg: "Lo sentimos, los passwords no coinciden" });
-    
-    // Buscar el token en estudiantes
-    let usuarioBDD = await Estudiante.findOne({ token: req.params.token });
-    
-    // Si no se encuentra en estudiantes, buscar en administradores
-    if (!usuarioBDD) {
-        usuarioBDD = await Administrador.findOne({ token: req.params.token });
+            .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
+        
+        usuarioBDD.token = null;
+        usuarioBDD.password = await usuarioBDD.encrypPassword(password);
+        await usuarioBDD.save();
+        res
+            .status(200)
+            .json({
+            msg: "Felicitaciones, ya puedes iniciar sesión con tu nuevo password",
+            });
+            
+    } catch (error) {
+        console.error("Error en nuevoPassword:", error);
+        res
+            .status(500)
+            .json({ msg: "Error interno del servidor" });
     }
-    
-    if (!usuarioBDD || usuarioBDD?.token !== req.params.token)
-        return res
-        .status(400)
-        .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    
-    usuarioBDD.token = null;
-    usuarioBDD.password = await usuarioBDD.encrypPassword(password);
-    await usuarioBDD.save();
-    res
-        .status(200)
-        .json({
-        msg: "Felicitaciones, ya puedes iniciar sesión con tu nuevo password",
-        });
 };
 
 

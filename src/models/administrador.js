@@ -34,6 +34,18 @@ const administradorSchema = new Schema(
             type: String,
             required: true,
         },
+        estado: {
+            type: Boolean,
+            default: true,
+        },
+        token: {
+            type: String,
+            default: null,
+        },
+        confirmEmail: {
+            type: Boolean,
+            default: false,
+        },
         rol: {
             type: String,
             default: "administrador",
@@ -55,6 +67,12 @@ administradorSchema.methods.encrypPassword = async function (password) {
 administradorSchema.methods.matchPassword = async function (password) {
     const response = await bcrypt.compare(password, this.password);
     return response;
+};
+
+// Método para crear un token
+administradorSchema.methods.crearToken = function () {
+    const tokenGenerado = (this.token = Math.random().toString(36).slice(2));
+    return tokenGenerado;
 };
 
 export default model("Administrador", administradorSchema);
