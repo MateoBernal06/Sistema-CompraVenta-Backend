@@ -167,12 +167,6 @@ const recuperarPassword = async (req, res) => {
         return res
             .status(404)
             .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
-    
-    // Validar que el usuario tenga el rol de estudiante
-    if (estudianteBDD.rol !== "estudiante")
-        return res
-            .status(403)
-            .json({ msg: "Acceso denegado: solo estudiantes pueden recuperar contraseña" });
             
     const token = estudianteBDD.crearToken();
     estudianteBDD.token = token;

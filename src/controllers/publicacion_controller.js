@@ -82,7 +82,7 @@ const obtenerPublicaciones = async (req, res) => {
             publicaciones = await Publicacion.find()
                 .populate('autor')
                 .populate('categoria')
-                .sort({ createdAt: -1 });
+                .sort({ titulo: 1 });
         } else {
             publicaciones = await Publicacion.find({ disponible: true })
                 .populate('autor')
