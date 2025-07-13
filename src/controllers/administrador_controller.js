@@ -50,82 +50,6 @@ const loginAdministrador = async (req, res) => {
 };
 
 
-// Método para recuperar el password
-const recuperarPassword = async (req, res) => {
-    const { email } = req.body;
-    if (Object.values(req.body).includes(""))
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, debes llenar todos los campos" });
-    const administradorBDD = await Administrador.findOne({ email });
-    if (!administradorBDD)
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, el usuario no se encuentra registrado" });
-
-    const token = administradorBDD.crearToken();
-    administradorBDD.token = token;
-    await sendMailToRecoveryPassword(email, token);
-    await administradorBDD.save();
-    res
-        .status(200)
-        .json({ msg: "Revisa tu correo electrónico para reestablecer tu cuenta" });
-};
-
-
-// Método para comprobar el token
-const comprobarTokenPasword = async (req, res) => {
-    if (!req.params.token)
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    const administradorBDD = await Administrador.findOne({ token: req.params.token });
-    if (administradorBDD?.token !== req.params.token)
-        return res
-            .status(404)
-            .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    await administradorBDD.save();
-    res
-        .status(200)
-        .json({ msg: "Token confirmado, ya puedes crear tu nuevo password" });
-};
-
-
-// Método para crear el nuevo password
-const nuevoPassword = async (req, res) => {
-    const { password, confirmpassword } = req.body;
-    if (Object.values(req.body).includes(""))
-        return res
-        .status(404)
-        .json({ msg: "Lo sentimos, debes llenar todos los campos" });
-
-    // Validar que la contraseña tenga mínimo 6 caracteres
-    if (!password || password.length < 6)
-        return res
-            .status(400)
-            .json({ msg: "La contraseña debe tener al menos 6 caracteres" });
-
-    if (password != confirmpassword)
-        return res
-        .status(400)
-        .json({ msg: "Lo sentimos, los passwords no coinciden" });
-    const administradorBDD = await Administrador.findOne({ token: req.params.token });
-
-    if (administradorBDD?.token !== req.params.token)
-        return res
-        .status(400)
-        .json({ msg: "Lo sentimos, no se puede validar la cuenta" });
-    administradorBDD.token = null;
-    administradorBDD.password = await administradorBDD.encrypPassword(password);
-    await administradorBDD.save();
-    res
-        .status(200)
-        .json({
-        msg: "Felicitaciones, ya puedes iniciar sesión con tu nuevo password",
-        });
-};
-
-
 const actualizarPassword = async (req, res) => {
     
     const { passwordActual, nuevaPassword, repetirPassword } = req.body;
@@ -253,9 +177,6 @@ const administradorPerfil = async (req, res) => {
 
 export {
     loginAdministrador,
-    recuperarPassword,
-    comprobarTokenPasword,
-    nuevoPassword,
     actualizarPassword,
     actualizarDatosAdministrador,
     administradorPerfil

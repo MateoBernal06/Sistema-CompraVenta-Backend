@@ -6,9 +6,7 @@ import {
     loginAdministrador,
     actualizarPassword,
     actualizarDatosAdministrador,
-    administradorPerfil,
-    comprobarTokenPasword,
-    nuevoPassword
+    administradorPerfil
 } from "../controllers/administrador_controller.js";
 
 import {
