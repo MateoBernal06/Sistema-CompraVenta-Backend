@@ -7,7 +7,6 @@ import {
     actualizarPassword,
     actualizarDatosAdministrador,
     administradorPerfil,
-    recuperarPassword,
     comprobarTokenPasword,
     nuevoPassword
 } from "../controllers/administrador_controller.js";

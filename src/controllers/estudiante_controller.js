@@ -106,11 +106,14 @@ const registro = async (req, res) => {
             .status(400)
             .json({ msg: "La contraseña debe contener al menos una mayúscula" });
 
-    // Obtener el usuario de la BDD en base al email
-    const verificarEmailBDD = await Estudiante.findOne({ email });
+    // Verificar que el email no esté registrado en estudiantes
+    const verificarEmailEstudiante = await Estudiante.findOne({ email });
     
-    // Validar que el email sea nuevo
-    if (verificarEmailBDD)
+    // Verificar que el email no esté registrado en administradores
+    const verificarEmailAdministrador = await Administrador.findOne({ email });
+    
+    // Validar que el email sea nuevo en ambas colecciones
+    if (verificarEmailEstudiante || verificarEmailAdministrador)
         return res
         .status(400)
         .json({ msg: "Lo sentimos, el email ya se encuentra registrado" });
