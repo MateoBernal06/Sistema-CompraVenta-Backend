@@ -1,6 +1,6 @@
 import Categoria from '../models/categoria.js';
 import mongoose from "mongoose";
-
+import Publicacion from '../models/publicacion.js';
 
 const crearCategoria = async (req, res) => {
     
@@ -147,11 +147,18 @@ const inactivarCategoria = async (req, res) => {
         }
 
         categoriaInactivada.estado = !categoriaInactivada.estado; 
+        
+        // Actualizar también el estado de todas las publicaciones asociadas a esta categoría
+        await Publicacion.updateMany(
+            { categoria: id }, // Filtro: todas las publicaciones de esta categoría
+            { estado: categoriaInactivada.estado } // Nuevo estado: mismo que la categoría
+        );
+        
         await categoriaInactivada.save();
 
         const mensaje = categoriaInactivada.estado
-            ? 'Categoría activada exitosamente'
-            : 'Categoría inactivada exitosamente';
+            ? 'Categoría activada'
+            : 'Categoría inactivada';
 
         res
             .status(200)
