@@ -3,6 +3,7 @@ import { sendMailToUser,sendMailToRecoveryPassword } from "../config/nodemailer.
 import generarJWT from "../helpers/createJWT.js";
 import Estudiante from "../models/estudiante.js";
 import Administrador from "../models/administrador.js";
+import Publicacion from "../models/publicacion.js";
 import mongoose from "mongoose";
 
 
@@ -346,12 +347,16 @@ const inactivarEstudiante = async (req, res) => {
                 .json({ msg: 'Estudiante no encontrado' });
         }
 
-        estudianteInactivado.estado = !estudianteInactivado.estado; 
+        estudianteInactivado.estado = !estudianteInactivado.estado;
+        await Publicacion.updateMany(
+            { autor: id }, // Filtro: todas las publicaciones del estudiante
+            { estado: estudianteInactivado.estado } // Nuevo estado: mismo que el estudiante
+        ); 
         await estudianteInactivado.save();
 
         const mensaje = estudianteInactivado.estado
-            ? 'Estudiante activado exitosamente'
-            : 'Estudiante inactivado exitosamente';
+            ? 'Estudiante activado'
+            : 'Estudiante inactivado';
 
         res
             .status(200)
