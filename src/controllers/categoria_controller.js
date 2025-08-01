@@ -52,10 +52,19 @@ const crearCategoria = async (req, res) => {
 
 const verTodasCategorias = async (req, res) => {
     try {
-        const categorias = await Categoria.find().sort({ nombre: 1 });
+        let categorias;
+
+        // Si es administrador, puede ver todas las categorías
+        if (req.AdministradorBDD && req.AdministradorBDD.rol === "administrador") {
+            categorias = await Categoria.find().sort({ nombre: 1 });
+        } else {
+            // Para estudiantes/usuarios regulares, solo categorías activas
+            categorias = await Categoria.find({ estado: true }).sort({ nombre: 1 });
+        }
         res
             .status(200)
             .json(categorias);
+            
     } catch (err) {
         res
             .status(400)
