@@ -12,6 +12,13 @@ let transporter = nodemailer.createTransport({
     }
 });
 
+// Verificar conexión al transportador y mostrar error si falla
+transporter.verify().then(() => {
+    console.log('Nodemailer: transportador listo para enviar correos');
+}).catch((err) => {
+    console.error('Nodemailer: error al verificar transportador', err);
+});
+
 const sendMailToUser = (userMail, token) => {
     let mailOptions = {
         from: process.env.EMAIL_SERVICE_USER,
@@ -59,7 +66,7 @@ const sendMailToUser = (userMail, token) => {
 // send mail with defined transport object
 const sendMailToRecoveryPassword = async (userMail, token) => {
     let info = await transporter.sendMail({
-        from: "admin@dragonya.com",
+        from: process.env.EMAIL_SERVICE_USER,
         to: userMail,
         subject: "Correo para reestablecer tu contraseña",
         html: `
