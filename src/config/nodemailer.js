@@ -3,13 +3,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 let transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_SERVICE_HOST,
-    port: parseInt(process.env.EMAIL_SERVICE_PORT),
-    secure: true, // usa true para el puerto 465
+    service: "gmail",
+    port: 465,
+    secure: true, 
     auth: {
         user: process.env.EMAIL_SERVICE_USER,
         pass: process.env.EMAIL_SERVICE_PASS,
-    },
+    }
 });
 
 const sendMailToUser = (userMail, token) => {
