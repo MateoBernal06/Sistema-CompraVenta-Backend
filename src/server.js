@@ -21,21 +21,29 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:5174",
-  process.env.URL_FRONTEND,
+  process.env.URL_FRONTEND || "http://localhost:3000",
 ].filter(Boolean); // Remove undefined values
 
 const corsOptions = {
     origin: function(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) {
+            return callback(null, true);
         }
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        callback(null, true); // Allow all for now to debug
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
+
+// Preflight handler
+app.options("*", cors(corsOptions));
 
 // Middlewares
 app.use(express.json());
