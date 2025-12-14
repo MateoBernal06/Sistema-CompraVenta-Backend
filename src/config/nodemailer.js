@@ -19,7 +19,7 @@ transporter.verify().then(() => {
     console.error('Nodemailer: error al verificar transportador', err);
 });
 
-const sendMailToUser = (userMail, token) => {
+const sendMailToUser = async (userMail, token) => {
     let mailOptions = {
         from: process.env.EMAIL_SERVICE_USER,
         to: userMail,
@@ -54,13 +54,14 @@ const sendMailToUser = (userMail, token) => {
     </div>
         `,
     };
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-        console.log(error);
-        } else {
+    try {
+        let info = await transporter.sendMail(mailOptions);
         console.log("Correo enviado: " + info.response);
-        }
-    });
+        return info;
+    } catch (error) {
+        console.error("Error al enviar correo:", error);
+        throw error;
+    }
 };
 
 // send mail with defined transport object
